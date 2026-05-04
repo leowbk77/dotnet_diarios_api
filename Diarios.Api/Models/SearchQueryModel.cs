@@ -13,11 +13,11 @@ namespace Diarios.Api.Models
         public DateOnly? dtFinal { get; set; }
         //termo de busca por edicao especifica
         public string? edicao { get; set; }
-        //filtrar edicoes extras (true por default)
-        //removido - ainda nao definitivo
-        //public bool? edextras { get; set; }
-
         //ultimo id de arquivo pesquisado - para paginação
         public int? lastId { get; set; }
+        //limite de documentos a serem buscados
+        public int limit { get; set; } = 10;
+        //UPDATE: mudar pra receber a cidade pelo request
+        public string? cidade {get; set;} = String.Empty;
     }
 }

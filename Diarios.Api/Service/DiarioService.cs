@@ -19,29 +19,32 @@ namespace Diarios.Api.Service
             return _repository.GetDiarioById(id, cidade);
         }
 
-        public List<DiarioModel> SearchDiarios(SearchQueryModel search, string cidade)
+        public List<SearchDiariosResultModel> SearchDiarios(SearchQueryModel search, string cidade)
         {
             string query = "";
-            int lastId = search.lastId ?? 0;
-            //List<DiarioModel> diarios;
+            List<SearchDiariosResultModel> diarios = new List<SearchDiariosResultModel>();
 
             if (search.terms != null)
             {
                 search.terms = search.terms?.Replace('+', ' ');
 
-                if (search.edicao != null)
-                {
-                    query = QueryBuilder.SearchForTermsOnEdicao(search);
-                    //diarios = _repository.SearchDiarios(QueryBuilder.SearchForTermsOnEdicao(search), cidade);
-                } else
-                {
-                    query = QueryBuilder.SearchForTermsOnAllDocs(search);
-                    //diarios = _repository.SearchDiarios(QueryBuilder.SearchForTermsOnAllDocs(search), cidade);
-                }
-                return _repository.SearchDiarios(query, cidade);
+                List<int> ids = _repository.SearchForDiariosIds(QueryBuilder.GetDocsIds(search), cidade);
+
+                // usar para o front saber se tem mais a ser buscado.
+                // criar um response model com um hasMore e o Data dos diarios.
+                bool hasMore = ids.Count > search.limit;
+                if (hasMore) ids = ids.Take(search.limit).ToList();
+
+                return _repository.SearchDiariosByIdList(QueryBuilder.GetPaginasByDocIds(search, ids), cidade);
             }
 
-            return new List<DiarioModel>();
+            return new List<SearchDiariosResultModel>();
+        }
+
+        //uso futuro
+        public async Task<List<SearchDiariosResultModel>> SearchDiariosAsync(SearchQueryModel search, string cidade)
+        {
+            return new List<SearchDiariosResultModel>();
         }
     }
 }

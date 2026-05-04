@@ -4,42 +4,53 @@ namespace Diarios.Api.Service
 {
     public static class QueryBuilder
     {
-        public static string SearchForTermsOnEdicao(SearchQueryModel searchModel)
+        /// <summary>
+        /// Obtém a lista de IDs dos documentos que correspondem aos filtros da busca
+        /// </summary>
+        /// <param name="searchModel"></param>
+        /// <returns></returns>
+        public static string GetDocsIds(SearchQueryModel searchModel)
         {
-            string documentsByEdicaoQuery = $"""
-                                            SELECT *
-                                            FROM docs
-                                            WHERE docs.nm_edicao LIKE '%{searchModel.edicao}%'
-                                            """;
+            int lastId = searchModel.lastId ?? 0;
+            int fetchLimit = searchModel.limit + 1;
 
             string query = $"""
-                            SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia
-                            FROM docs_fts f
-                            INNER JOIN ({documentsByEdicaoQuery}) d
-                            ON f.doc_id = d.id
-                            WHERE f.conteudo MATCH '{searchModel.terms}'
-                            """;
+                SELECT DISTINCT f.doc_id
+                FROM docs_fts f
+                INNER JOIN ({AddDateFiltering(searchModel)}) d 
+                ON f.doc_id = d.id
+                WHERE f.conteudo MATCH '{searchModel.terms}'
+                """;
+
+            if (searchModel.edicao != null) query += $""""
+                    
+                                                     AND d.nm_edicao LIKE '%{searchModel.edicao}%'
+                                                     """";
+            query += $""""
+
+                AND f.doc_id > {lastId}
+                ORDER BY f.doc_id ASC
+                LIMIT {fetchLimit}
+                """";
+
             return query;
         }
 
-        public static string SearchForTermsOnAllDocs(SearchQueryModel searchModel)
+        public static string GetPaginasByDocIds(SearchQueryModel searchModel, IEnumerable<int> docIds)
         {
-            string newQueryDtFilter = "";
+            string idList = string.Join(",", docIds);
 
-            string newQuery = $"""
-                                SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia
-                                FROM (
-                                    SELECT ft.pagina, ft.conteudo, ft.doc_id 
-                                    FROM docs_fts ft 
-                                    WHERE ft.conteudo MATCH '{searchModel.terms}'
-                                ) f
-                                INNER JOIN ({newQueryDtFilter.AddDate(searchModel)}) d
-                                ON f.doc_id = d.id
-                                """;
-            return newQuery;
+            return $"""
+                SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia
+                FROM docs_fts f
+                INNER JOIN docs d ON f.doc_id = d.id
+                WHERE f.doc_id IN ({idList})
+                AND f.conteudo MATCH '{searchModel.terms}'
+                ORDER BY d.id ASC, f.pagina ASC
+                """;
         }
 
-        private static string AddDate(this String query, SearchQueryModel queryModel)
+        private static string AddDateFiltering(SearchQueryModel queryModel)
         {
             string filterQuery = String.Empty;
             DateOnly dataInicial = queryModel.dtInicial ?? new DateOnly();
@@ -95,6 +106,7 @@ namespace Diarios.Api.Service
                                     SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia 
                                     FROM docs d1
                                     """;
+                    filterQuery = $""""docs""""; // temporario para testes
                 }
             }
             return filterQuery;

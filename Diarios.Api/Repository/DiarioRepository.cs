@@ -18,14 +18,9 @@ namespace Diarios.Api.Repository
 
         public DiarioModel GetDiarioById(int id, string cidade)
         {
-            string connectionString = _connectionProvider.GetConnectionString(cidade);
+            string connectionString = GetConnectionStringValidada(cidade);
             SqliteConnection connection = new SqliteConnection(connectionString);
             DiarioModel diario = new DiarioModel();
-
-            if (!DataBaseExists(connectionString))
-            {
-                throw new DatabaseNotFoundException(connectionString);
-            }
 
             connection.Open();
             var command = connection.CreateCommand();
@@ -53,6 +48,7 @@ namespace Diarios.Api.Repository
             return diario;
         }
 
+        // deprecated
         public List<DiarioModel> SearchDiarios(string query, string cidade)
         {
             List<DiarioModel> diarios = new List<DiarioModel>();
@@ -69,7 +65,7 @@ namespace Diarios.Api.Repository
             var command = connection.CreateCommand();
             command.CommandText = query;
 
-            var reader = command.ExecuteReader();
+            using var reader = command.ExecuteReader();
 
             while (reader.Read())
             {
@@ -84,6 +80,87 @@ namespace Diarios.Api.Repository
             }
 
             return diarios;
+        }
+
+        public List<int> SearchForDiariosIds(string query, string cidade)
+        {
+            string connectionString = GetConnectionStringValidada(cidade);
+            List<int> diariosIds = new List<int>();
+
+            SqliteConnection connection = new SqliteConnection(connectionString);
+            connection.Open();
+            var command = connection.CreateCommand();
+            command.CommandText = query;
+
+            using var reader = command.ExecuteReader();
+
+            while(reader.Read())
+            {
+                diariosIds.Add(reader.GetInt32(reader.GetOrdinal("doc_id")));
+            }
+
+            return diariosIds;
+        }
+
+        public List<SearchDiariosResultModel> SearchDiariosByIdList(string query, string cidade)
+        {
+            string connectionString = GetConnectionStringValidada(cidade);
+
+            SqliteConnection connection = new SqliteConnection(connectionString);
+            connection.Open();
+            var command = connection.CreateCommand();
+            command.CommandText = query;
+
+            using var reader = command.ExecuteReader();
+
+            var diariosResult = new Dictionary<int, SearchDiariosResultModel>();
+
+            while(reader.Read())
+            {
+                int id = reader.GetInt32(reader.GetOrdinal("id"));
+
+                if (!diariosResult.ContainsKey(id))
+                {
+                    diariosResult[id] = MapSearchResult(reader);
+                }
+                // Opção: Se tiver mais de 3 paginas com conteudo
+                // omitir o conteudo para salvar espaço na mensagem
+                // informar apenas o numero da pagina
+                // EX: resultados encontrados
+                // Pg1, Pg2, Pg3 e mais [x] resultados...
+
+                diariosResult[id].Paginas.Add(MapPagina(reader));
+
+            }
+
+            return diariosResult.Values.ToList();
+        }
+
+        private static PaginaModel MapPagina(SqliteDataReader reader) => new()
+        {
+            Numero = reader.IsDBNull(reader.GetOrdinal("pagina")) ? 0 : reader.GetInt32(reader.GetOrdinal("pagina")),
+            Conteudo = reader.IsDBNull(reader.GetOrdinal("conteudo")) ? String.Empty : reader.GetString(reader.GetOrdinal("conteudo"))
+        };
+
+        private static SearchDiariosResultModel MapSearchResult(SqliteDataReader reader) => new()
+        {
+            Id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32(reader.GetOrdinal("id")),
+            NmEdicao = reader.IsDBNull(reader.GetOrdinal("nm_edicao")) ? "" : reader.GetString(reader.GetOrdinal("nm_edicao")),
+            Caminho = reader.IsDBNull(reader.GetOrdinal("caminho")) ? "" : reader.GetString(reader.GetOrdinal("caminho")),
+            Ano = reader.IsDBNull(reader.GetOrdinal("ano")) ? 0 : reader.GetInt32(reader.GetOrdinal("ano")),
+            Mes = reader.IsDBNull(reader.GetOrdinal("mes")) ? 0 : reader.GetInt32(reader.GetOrdinal("mes")),
+            Dia = reader.IsDBNull(reader.GetOrdinal("dia")) ? 0 : reader.GetInt32(reader.GetOrdinal("dia")),
+            Paginas = new List<PaginaModel>()
+        };
+
+        private string GetConnectionStringValidada(string cidade)
+        {
+            string connectionString = _connectionProvider.GetConnectionString(cidade);
+
+            if (!File.Exists($"{cidade}.db"))
+                throw new DatabaseNotFoundException(connectionString);
+
+            return connectionString;
         }
 
         private bool DataBaseExists(string connectionString) 
