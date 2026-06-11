@@ -30,17 +30,15 @@ namespace Diarios.Api.Controllers
             }
         }
 
-        [HttpGet("{cidade}/search")]
+        [HttpGet("search")]
         [EndpointDescription("Endpoint responsável por realizar as buscas pelos diários na base de dados a partir dos parâmetros recebidos pela query.")]
-        public IActionResult Search([Description("Identificador da cidade a ser buscado")]
-                                    string cidade,
-                                    [FromQuery][Description("Parametros de busca e filtragem dos diários")] 
+        public IActionResult Search([FromQuery][Description("Parametros de busca e filtragem dos diários")] 
                                     SearchQueryModel query)
         {
             Log.Information("Teste de log no Search");
             try
             {
-                return Ok(_service.SearchDiarios(query, cidade));
+                return Ok(_service.SearchDiarios(query));
             }
             catch (DiarioCustomException ex)
             {

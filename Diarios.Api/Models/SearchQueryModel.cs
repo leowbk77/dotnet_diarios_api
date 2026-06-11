@@ -17,7 +17,6 @@ namespace Diarios.Api.Models
         public int? lastId { get; set; }
         //limite de documentos a serem buscados
         public int limit { get; set; } = 10;
-        //UPDATE: mudar pra receber a cidade pelo request
-        public string? cidade {get; set;} = String.Empty;
+        public string cidade {get; set;} = String.Empty;
     }
 }
