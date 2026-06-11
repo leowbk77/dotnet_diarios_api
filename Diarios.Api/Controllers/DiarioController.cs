@@ -33,13 +33,29 @@ namespace Diarios.Api.Controllers
         [HttpGet("search")]
         [EndpointDescription("Endpoint responsável por realizar as buscas pelos diários na base de dados a partir dos parâmetros recebidos pela query.")]
         [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
-        public IActionResult Search([FromQuery][Description("Parametros de busca e filtragem dos diários")] 
+        public async Task<IActionResult> Search([FromQuery][Description("Parametros de busca e filtragem dos diários")] 
                                     SearchQueryModel query)
         {
-            Log.Information($"Search: {query.cidade}: lastId:{query.lastId}");
+            Log.Information($"GET Search: {query.cidade}: lastId:{query.lastId}");
             try
             {
-                return Ok(_service.SearchDiarios(query));
+                return Ok(await _service.SearchDiariosAsync(query));
+            }
+            catch (DiarioCustomException ex)
+            {
+                return StatusCode(ex.httpStatusCode, ex.Message);
+            }
+        }
+
+        [HttpGet("get-latest")]
+        [EndpointDescription("Endpoint responsável por buscar o último diário indexado")]
+        [ProducesResponseType(typeof(DiarioModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLatestDiario([FromQuery] string from)
+        {
+            Log.Information($"GET GetLatestDiario");
+            try
+            {
+                return Ok(await _service.SearchForLatestAsync(from));
             }
             catch (DiarioCustomException ex)
             {

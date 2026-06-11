@@ -19,7 +19,7 @@ namespace Diarios.Api.Service
             return _repository.GetDiarioById(id, cidade);
         }
 
-        public ResponseModel SearchDiarios(SearchQueryModel search)
+        public async Task<ResponseModel> SearchDiariosAsync(SearchQueryModel search)
         {
             List<SearchDiariosResultModel> diarios = new List<SearchDiariosResultModel>();
 
@@ -27,13 +27,13 @@ namespace Diarios.Api.Service
             {
                 search.terms = search.terms?.Replace('+', ' ');
 
-                List<int> ids = _repository.SearchForDiariosIds(QueryBuilder.GetDocsIds(search), search.cidade);
+                List<int> ids = await _repository.SearchForDiariosIdsAsync(QueryBuilder.GetDocsIds(search), search.cidade);
 
                 // usar para o front saber se tem mais a ser buscado.
                 // criar um response model com um hasMore e o Data dos diarios.
                 bool hasMore = ids.Count > search.limit;
                 if (hasMore) ids = ids.Take(search.limit).ToList();
-                var response = _repository.SearchDiariosByIdList(QueryBuilder.GetPaginasByDocIds(search, ids), search.cidade);
+                var response = await _repository.SearchDiariosByIdListAsync(QueryBuilder.GetPaginasByDocIds(search, ids), search.cidade);
                 return new ResponseModel
                 {
                     SearchDiariosResults = response,
@@ -44,10 +44,11 @@ namespace Diarios.Api.Service
             return new();
         }
 
-        //uso futuro
-        public async Task<ResponseModel> SearchDiariosAsync(SearchQueryModel search)
+        public async Task<DiarioModel> SearchForLatestAsync(string cidade)
         {
-            return new();
+            var response = await _repository.SearchForLatestAsync(cidade);
+            return response;
         }
+
     }
 }

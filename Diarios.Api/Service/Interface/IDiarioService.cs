@@ -5,6 +5,7 @@ namespace Diarios.Api.Service.Interface
     public interface IDiarioService
     {
         DiarioModel GetDiarioById(int id, string cidade);
-        ResponseModel SearchDiarios(SearchQueryModel query);
+        Task<ResponseModel> SearchDiariosAsync(SearchQueryModel query);
+        Task<DiarioModel> SearchForLatestAsync(string cidade);
     }
 }

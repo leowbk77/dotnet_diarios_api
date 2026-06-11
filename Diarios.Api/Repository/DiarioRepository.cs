@@ -48,41 +48,29 @@ namespace Diarios.Api.Repository
             return diario;
         }
 
-        // deprecated
-        public List<DiarioModel> SearchDiarios(string query, string cidade)
+        public async Task<DiarioModel?> SearchForLatestAsync(string cidade)
         {
-            List<DiarioModel> diarios = new List<DiarioModel>();
-            string connectionString = _connectionProvider.GetConnectionString(cidade);
+            string connectionString = GetConnectionStringValidada(cidade);
 
-            if (!DataBaseExists($"{cidade}.db"))
-            {
-                throw new DatabaseNotFoundException(connectionString);
-            }
-
-            SqliteConnection connection = new SqliteConnection(connectionString);
-
+            using var connection = new SqliteConnection(connectionString);
             connection.Open();
+
             var command = connection.CreateCommand();
-            command.CommandText = query;
+            command.CommandText = """
+                          SELECT *
+                          FROM docs
+                          ORDER BY ano DESC, mes DESC, dia DESC
+                          LIMIT 1
+                          """;
 
-            using var reader = command.ExecuteReader();
+            using var reader = await command.ExecuteReaderAsync();
+            if (!reader.Read())
+                return null;
 
-            while (reader.Read())
-            {
-                diarios.Add(new DiarioModel {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32(reader.GetOrdinal("id")),
-                    nmEdicao = reader.IsDBNull(reader.GetOrdinal("nm_edicao")) ? "" : reader.GetString(reader.GetOrdinal("nm_edicao")),
-                    caminho = reader.IsDBNull(reader.GetOrdinal("caminho")) ? "" : reader.GetString(reader.GetOrdinal("caminho")),
-                    ano = reader.IsDBNull(reader.GetOrdinal("ano")) ? 0 : reader.GetInt32(reader.GetOrdinal("ano")),
-                    mes = reader.IsDBNull(reader.GetOrdinal("mes")) ? 0 : reader.GetInt32(reader.GetOrdinal("mes")),
-                    dia = reader.IsDBNull(reader.GetOrdinal("dia")) ? 0 : reader.GetInt32(reader.GetOrdinal("dia")),
-                });
-            }
-
-            return diarios;
+            return MapDiario(reader);
         }
 
-        public List<int> SearchForDiariosIds(string query, string cidade)
+        public async Task<List<int>> SearchForDiariosIdsAsync(string query, string cidade)
         {
             string connectionString = GetConnectionStringValidada(cidade);
             List<int> diariosIds = new List<int>();
@@ -92,7 +80,7 @@ namespace Diarios.Api.Repository
             var command = connection.CreateCommand();
             command.CommandText = query;
 
-            using var reader = command.ExecuteReader();
+            using var reader = await command.ExecuteReaderAsync();
 
             while(reader.Read())
             {
@@ -102,7 +90,7 @@ namespace Diarios.Api.Repository
             return diariosIds;
         }
 
-        public List<SearchDiariosResultModel> SearchDiariosByIdList(string query, string cidade)
+        public async Task<List<SearchDiariosResultModel>> SearchDiariosByIdListAsync(string query, string cidade)
         {
             string connectionString = GetConnectionStringValidada(cidade);
 
@@ -111,7 +99,7 @@ namespace Diarios.Api.Repository
             var command = connection.CreateCommand();
             command.CommandText = query;
 
-            using var reader = command.ExecuteReader();
+            using var reader = await command.ExecuteReaderAsync();
 
             var diariosResult = new Dictionary<int, SearchDiariosResultModel>();
             int paginasObtidasNoIdAtual = 0;
@@ -172,6 +160,16 @@ namespace Diarios.Api.Repository
             Mes = reader.IsDBNull(reader.GetOrdinal("mes")) ? 0 : reader.GetInt32(reader.GetOrdinal("mes")),
             Dia = reader.IsDBNull(reader.GetOrdinal("dia")) ? 0 : reader.GetInt32(reader.GetOrdinal("dia")),
             Paginas = new List<PaginaModel>()
+        };
+
+        private static DiarioModel MapDiario(SqliteDataReader reader) => new()
+        {
+            id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32(reader.GetOrdinal("id")),
+            nmEdicao = reader.IsDBNull(reader.GetOrdinal("nm_edicao")) ? "" : reader.GetString(reader.GetOrdinal("nm_edicao")),
+            caminho = reader.IsDBNull(reader.GetOrdinal("caminho")) ? "" : reader.GetString(reader.GetOrdinal("caminho")),
+            ano = reader.IsDBNull(reader.GetOrdinal("ano")) ? 0 : reader.GetInt32(reader.GetOrdinal("ano")),
+            mes = reader.IsDBNull(reader.GetOrdinal("mes")) ? 0 : reader.GetInt32(reader.GetOrdinal("mes")),
+            dia = reader.IsDBNull(reader.GetOrdinal("dia")) ? 0 : reader.GetInt32(reader.GetOrdinal("dia")),
         };
 
         private string GetConnectionStringValidada(string cidade)
