@@ -19,9 +19,8 @@ namespace Diarios.Api.Service
             return _repository.GetDiarioById(id, cidade);
         }
 
-        public List<SearchDiariosResultModel> SearchDiarios(SearchQueryModel search)
+        public ResponseModel SearchDiarios(SearchQueryModel search)
         {
-            string query = "";
             List<SearchDiariosResultModel> diarios = new List<SearchDiariosResultModel>();
 
             if (search.terms != null)
@@ -34,11 +33,15 @@ namespace Diarios.Api.Service
                 // criar um response model com um hasMore e o Data dos diarios.
                 bool hasMore = ids.Count > search.limit;
                 if (hasMore) ids = ids.Take(search.limit).ToList();
-
-                return _repository.SearchDiariosByIdList(QueryBuilder.GetPaginasByDocIds(search, ids), search.cidade);
+                var response = _repository.SearchDiariosByIdList(QueryBuilder.GetPaginasByDocIds(search, ids), search.cidade);
+                return new ResponseModel
+                {
+                    SearchDiariosResults = response,
+                    HasMore = hasMore
+                };
             }
 
-            return new List<SearchDiariosResultModel>();
+            return new();
         }
 
         //uso futuro

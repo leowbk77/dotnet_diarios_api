@@ -32,10 +32,11 @@ namespace Diarios.Api.Controllers
 
         [HttpGet("search")]
         [EndpointDescription("Endpoint responsável por realizar as buscas pelos diários na base de dados a partir dos parâmetros recebidos pela query.")]
+        [ProducesResponseType(typeof(ResponseModel), StatusCodes.Status200OK)]
         public IActionResult Search([FromQuery][Description("Parametros de busca e filtragem dos diários")] 
                                     SearchQueryModel query)
         {
-            Log.Information("Teste de log no Search");
+            Log.Information($"Search: {query.cidade}: lastId:{query.lastId}");
             try
             {
                 return Ok(_service.SearchDiarios(query));

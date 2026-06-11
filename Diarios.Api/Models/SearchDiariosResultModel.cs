@@ -1,5 +1,11 @@
 ﻿namespace Diarios.Api.Models
 {
+    public class ResponseModel
+    {
+        public List<SearchDiariosResultModel> SearchDiariosResults { get; set; } = new();
+        public bool HasMore { get; set;} = false;
+    }
+
     public class SearchDiariosResultModel
     {
         public int Id { get; set; }
