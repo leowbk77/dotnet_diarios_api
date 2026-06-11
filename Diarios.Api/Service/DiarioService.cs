@@ -45,9 +45,9 @@ namespace Diarios.Api.Service
         }
 
         //uso futuro
-        public async Task<List<SearchDiariosResultModel>> SearchDiariosAsync(SearchQueryModel search)
+        public async Task<ResponseModel> SearchDiariosAsync(SearchQueryModel search)
         {
-            return new List<SearchDiariosResultModel>();
+            return new();
         }
     }
 }

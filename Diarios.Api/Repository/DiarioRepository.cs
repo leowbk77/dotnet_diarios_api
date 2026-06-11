@@ -114,27 +114,48 @@ namespace Diarios.Api.Repository
             using var reader = command.ExecuteReader();
 
             var diariosResult = new Dictionary<int, SearchDiariosResultModel>();
-
-            while(reader.Read())
+            int paginasObtidasNoIdAtual = 0;
+            int idAtual = 0;
+            while (reader.Read())
             {
                 int id = reader.GetInt32(reader.GetOrdinal("id"));
+
+                if(idAtual != id)
+                {
+                    idAtual = id;
+                    paginasObtidasNoIdAtual = 0;
+                }
 
                 if (!diariosResult.ContainsKey(id))
                 {
                     diariosResult[id] = MapSearchResult(reader);
                 }
-                // Opção: Se tiver mais de 3 paginas com conteudo
+
+                // Se tiver mais de 3 paginas com conteudo
                 // omitir o conteudo para salvar espaço na mensagem
                 // informar apenas o numero da pagina
                 // EX: resultados encontrados
                 // Pg1, Pg2, Pg3 e mais [x] resultados...
-
-                diariosResult[id].Paginas.Add(MapPagina(reader));
-
+                // pode ser mudado para quantidade X vindo da requisicao
+                if(paginasObtidasNoIdAtual < 3)
+                {
+                    diariosResult[id].Paginas.Add(MapPagina(reader));
+                }
+                else
+                {
+                    diariosResult[id].Paginas.Add(MapPaginaSemConteudo(reader));
+                }
+                paginasObtidasNoIdAtual++;
             }
 
             return diariosResult.Values.ToList();
         }
+
+        private static PaginaModel MapPaginaSemConteudo(SqliteDataReader reader) => new()
+        {
+            Numero = reader.IsDBNull(reader.GetOrdinal("pagina")) ? 0 : reader.GetInt32(reader.GetOrdinal("pagina")),
+            Conteudo = String.Empty
+        };
 
         private static PaginaModel MapPagina(SqliteDataReader reader) => new()
         {
