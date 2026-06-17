@@ -2,6 +2,7 @@
 using Diarios.Api.Repository;
 using Diarios.Api.Repository.Interface;
 using Diarios.Api.Service.Interface;
+using Diarios.Api.Util.CustomException;
 
 namespace Diarios.Api.Service
 {
@@ -29,8 +30,6 @@ namespace Diarios.Api.Service
 
                 List<int> ids = await _repository.SearchForDiariosIdsAsync(QueryBuilder.GetDocsIds(search), search.cidade);
 
-                // usar para o front saber se tem mais a ser buscado.
-                // criar um response model com um hasMore e o Data dos diarios.
                 bool hasMore = ids.Count > search.limit;
                 if (hasMore) ids = ids.Take(search.limit).ToList();
                 var response = await _repository.SearchDiariosByIdListAsync(QueryBuilder.GetPaginasByDocIds(search, ids), search.cidade);
@@ -47,6 +46,10 @@ namespace Diarios.Api.Service
         public async Task<DiarioModel> SearchForLatestAsync(string cidade)
         {
             var response = await _repository.SearchForLatestAsync(cidade);
+            if (response == null)
+            {
+                throw new DiarioCustomException(StatusCodes.Status404NotFound);
+            }
             return response;
         }
 
