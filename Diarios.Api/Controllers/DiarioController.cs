@@ -18,6 +18,8 @@ namespace Diarios.Api.Controllers
         }
 
         [HttpGet("{cidade}/{id}")]
+        [EndpointDescription("Endpoint que busca diario a partir do id")]
+        [ProducesResponseType(typeof(DiarioModel), StatusCodes.Status200OK)]
         public IActionResult GetDiarioById(int id, string cidade)
         {
             try

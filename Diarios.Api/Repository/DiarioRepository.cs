@@ -4,16 +4,19 @@ using Diarios.Api.Service;
 using Diarios.Api.Util.CustomException;
 using Diarios.Api.Util.Provider.Interface;
 using Microsoft.Data.Sqlite;
+using Serilog;
 
 namespace Diarios.Api.Repository
 {
     public class DiarioRepository : IDiarioRepository
     {
         private readonly ICidadeProvider _connectionProvider;
+        private readonly IConfiguration _configuration;
 
-        public DiarioRepository(ICidadeProvider connectionProvider)
+        public DiarioRepository(ICidadeProvider connectionProvider, IConfiguration configuration)
         {
             _connectionProvider = connectionProvider;
+            _configuration = configuration;
         }
 
         public DiarioModel GetDiarioById(int id, string cidade)
@@ -119,12 +122,6 @@ namespace Diarios.Api.Repository
                     diariosResult[id] = MapSearchResult(reader);
                 }
 
-                // Se tiver mais de 3 paginas com conteudo
-                // omitir o conteudo para salvar espaço na mensagem
-                // informar apenas o numero da pagina
-                // EX: resultados encontrados
-                // Pg1, Pg2, Pg3 e mais [x] resultados...
-                // pode ser mudado para quantidade X vindo da requisicao
                 if(paginasObtidasNoIdAtual < 3)
                 {
                     diariosResult[id].Paginas.Add(MapPagina(reader));
@@ -176,15 +173,19 @@ namespace Diarios.Api.Repository
         {
             string connectionString = _connectionProvider.GetConnectionString(cidade);
 
-            if (!File.Exists($"{cidade}.db"))
+            if (!DataBaseExists(cidade))
+            {
+                Log.Information($"database: {cidade} nao encontrado.");
                 throw new DatabaseNotFoundException(connectionString);
+            }
 
             return connectionString;
         }
 
-        private bool DataBaseExists(string connectionString) 
+        private bool DataBaseExists(string cidade)
         {
-            return File.Exists(connectionString);
+            string db = $"{cidade}.db";
+            return (File.Exists($"./{db}") || File.Exists($"/data/{db}"));
         }
 
     }

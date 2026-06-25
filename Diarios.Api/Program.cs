@@ -31,11 +31,8 @@ namespace Diarios.Api
                 configuration.Enrich.WithProperty("env", env);
             });
 
-            
-
             builder.Services.ConfigureServices();
 
-            
             var app = builder.Build();
             
             if (app.Environment.IsDevelopment())
