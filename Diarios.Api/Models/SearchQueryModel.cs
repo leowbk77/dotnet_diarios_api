@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace Diarios.Api.Models
 {
@@ -7,17 +6,17 @@ namespace Diarios.Api.Models
     public class SearchQueryModel
     {
         [Description("termos de busca textual")]
-        public string? terms { get; set; }
+        public string? Terms { get; set; }
         //data inicial de filtragem
-        public DateOnly? dtInicial { get; set; }
+        public DateOnly? DtInicial { get; set; }
         //data final de filtragem
-        public DateOnly? dtFinal { get; set; }
+        public DateOnly? DtFinal { get; set; }
         //termo de busca por edicao especifica
-        public string? edicao { get; set; }
+        public string? Edicao { get; set; }
         //ultimo id de arquivo pesquisado - para paginação
-        public int? lastId { get; set; }
+        public int? LastDocId { get; set; }
         //limite de documentos a serem buscados
-        public int limit { get; set; } = 10;
-        public string cidade {get; set;} = String.Empty;
+        public int Limit { get; set; } = 10;
+        public string Cidade {get; set;} = String.Empty;
     }
 }

@@ -38,7 +38,7 @@ namespace Diarios.Api.Controllers
         public async Task<IActionResult> Search([FromQuery][Description("Parametros de busca e filtragem dos diários")] 
                                     SearchQueryModel query)
         {
-            Log.Information($"GET Search: {query.cidade}: lastId:{query.lastId}");
+            Log.Information($"GET Search: {query.Cidade}: lastId:{query.LastDocId ?? 0}");
             try
             {
                 return Ok(await _service.SearchDiariosAsync(query));
@@ -54,7 +54,7 @@ namespace Diarios.Api.Controllers
         [ProducesResponseType(typeof(DiarioModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetLatestDiario([FromQuery] string from)
         {
-            Log.Information($"GET GetLatestDiario");
+            Log.Information($"GET GetLatestDiario: from: {from}");
             try
             {
                 return Ok(await _service.SearchForLatestAsync(from));

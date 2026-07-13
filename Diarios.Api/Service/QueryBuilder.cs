@@ -11,20 +11,20 @@ namespace Diarios.Api.Service
         /// <returns></returns>
         public static string GetDocsIds(SearchQueryModel searchModel)
         {
-            int lastId = searchModel.lastId ?? 0;
-            int fetchLimit = searchModel.limit + 1;
+            int lastId = searchModel.LastDocId ?? 0;
+            int fetchLimit = searchModel.Limit + 1;
 
             string query = $"""
                 SELECT DISTINCT f.doc_id
                 FROM docs_fts f
                 INNER JOIN ({AddDateFiltering(searchModel)}) d 
                 ON f.doc_id = d.id
-                WHERE f.conteudo MATCH '{searchModel.terms}'
+                WHERE f.conteudo MATCH '{searchModel.Terms}'
                 """;
 
-            if (searchModel.edicao != null) query += $""""
+            if (searchModel.Edicao != null) query += $""""
                     
-                                                     AND d.nm_edicao LIKE '%{searchModel.edicao}%'
+                                                     AND d.nm_edicao LIKE '%{searchModel.Edicao}%'
                                                      """";
             query += $""""
 
@@ -45,7 +45,7 @@ namespace Diarios.Api.Service
                 FROM docs_fts f
                 INNER JOIN docs d ON f.doc_id = d.id
                 WHERE f.doc_id IN ({idList})
-                AND f.conteudo MATCH '{searchModel.terms}'
+                AND f.conteudo MATCH '{searchModel.Terms}'
                 ORDER BY d.id ASC, f.pagina ASC
                 """;
         }
@@ -53,10 +53,10 @@ namespace Diarios.Api.Service
         private static string AddDateFiltering(SearchQueryModel queryModel)
         {
             string filterQuery = String.Empty;
-            DateOnly dataInicial = queryModel.dtInicial ?? new DateOnly();
-            DateOnly dataFinal = queryModel.dtFinal ?? dataInicial;
+            DateOnly dataInicial = queryModel.DtInicial ?? new DateOnly();
+            DateOnly dataFinal = queryModel.DtFinal ?? dataInicial;
             // usuario selecionou um range de datas
-            if (queryModel.dtInicial != null && queryModel.dtFinal != null)
+            if (queryModel.DtInicial != null && queryModel.DtFinal != null)
             {
                 switch (dataFinal.Year - dataInicial.Year)
                 {
@@ -90,7 +90,7 @@ namespace Diarios.Api.Service
             else
             {
                 //usuario definiu uma data especifica
-                if (queryModel.dtInicial != null)
+                if (queryModel.DtInicial != null)
                 { 
                     filterQuery = $"""
                                     SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia 

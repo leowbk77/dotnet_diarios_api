@@ -14,7 +14,8 @@
         public int Ano { get; set; }
         public int Mes { get; set; }
         public int Dia { get; set; }
-        public List<PaginaModel> Paginas { get; set; }
+        public DateOnly Data { get; set; } = new(); // adição futura
+        public List<PaginaModel> Paginas { get; set; } = new();
     }
 
     public class PaginaModel

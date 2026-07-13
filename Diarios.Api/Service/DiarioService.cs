@@ -24,21 +24,22 @@ namespace Diarios.Api.Service
         {
             List<SearchDiariosResultModel> diarios = new List<SearchDiariosResultModel>();
 
-            if (search.terms != null)
+            if (search.Terms != null)
             {
-                search.terms = search.terms?.Replace('+', ' ');
+                search.Terms = search.Terms?.Replace('+', ' ');
 
-                List<int> ids = await _repository.SearchForDiariosIdsAsync(QueryBuilder.GetDocsIds(search), search.cidade);
+                List<int> ids = await _repository.SearchForDiariosIdsAsync(QueryBuilder.GetDocsIds(search), search.Cidade);
 
-                bool hasMore = ids.Count > search.limit;
-                if (hasMore) ids = ids.Take(search.limit).ToList();
-                var response = await _repository.SearchDiariosByIdListAsync(QueryBuilder.GetPaginasByDocIds(search, ids), search.cidade);
+                bool hasMore = ids.Count > search.Limit;
+                if (hasMore) ids = ids.Take(search.Limit).ToList();
+                var response = await _repository.SearchDiariosByIdListAsync(QueryBuilder.GetPaginasByDocIds(search, ids), search.Cidade);
                 return new ResponseModel
                 {
                     SearchDiariosResults = response,
                     HasMore = hasMore
                 };
             }
+            // adicionar a opcao caso seja busca sem termos, só edicao
 
             return new();
         }

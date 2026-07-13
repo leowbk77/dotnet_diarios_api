@@ -1,10 +1,3 @@
-using Diarios.Api.Controllers;
-using Diarios.Api.Repository;
-using Diarios.Api.Repository.Interface;
-using Diarios.Api.Service;
-using Diarios.Api.Service.Interface;
-using Diarios.Api.Util.Provider;
-using Diarios.Api.Util.Provider.Interface;
 using Diarios.Api.IoC;
 using Serilog;
 using Scalar.AspNetCore;
