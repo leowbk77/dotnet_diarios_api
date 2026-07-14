@@ -14,24 +14,21 @@ namespace Diarios.Api.Service
             int lastId = searchModel.LastDocId ?? 0;
             int fetchLimit = searchModel.Limit + 1;
 
+            // possibilidade de SQL Injection !!!!!!!!!
+            string termosDeBusca = searchModel.Terms == null ? "1" : $"f.conteudo MATCH '{searchModel.Terms}'";
+            string edicaoDeBusca = searchModel.Edicao == null ? "1" : $"d.nm_edicao LIKE '%{searchModel.Edicao}%'";
+
             string query = $"""
                 SELECT DISTINCT f.doc_id
                 FROM docs_fts f
                 INNER JOIN ({AddDateFiltering(searchModel)}) d 
                 ON f.doc_id = d.id
-                WHERE f.conteudo MATCH '{searchModel.Terms}'
-                """;
-
-            if (searchModel.Edicao != null) query += $""""
-                    
-                                                     AND d.nm_edicao LIKE '%{searchModel.Edicao}%'
-                                                     """";
-            query += $""""
-
+                WHERE {termosDeBusca}
+                AND {edicaoDeBusca}
                 AND f.doc_id > {lastId}
                 ORDER BY f.doc_id ASC
                 LIMIT {fetchLimit}
-                """";
+                """;
 
             return query;
         }
@@ -39,15 +36,16 @@ namespace Diarios.Api.Service
         public static string GetPaginasByDocIds(SearchQueryModel searchModel, IEnumerable<int> docIds)
         {
             string idList = string.Join(",", docIds);
+            string conteudoDeBusca = searchModel.Terms == null ? "f.pagina = 1" : $"f.conteudo MATCH '{searchModel.Terms}'";
 
             return $"""
-                SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia
-                FROM docs_fts f
-                INNER JOIN docs d ON f.doc_id = d.id
-                WHERE f.doc_id IN ({idList})
-                AND f.conteudo MATCH '{searchModel.Terms}'
-                ORDER BY d.id ASC, f.pagina ASC
-                """;
+                    SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia
+                    FROM docs_fts f
+                    INNER JOIN docs d ON f.doc_id = d.id
+                    WHERE f.doc_id IN ({idList})
+                    AND {conteudoDeBusca}
+                    ORDER BY d.id ASC, f.pagina ASC
+                    """;
         }
 
         private static string AddDateFiltering(SearchQueryModel queryModel)

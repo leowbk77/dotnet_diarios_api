@@ -24,24 +24,20 @@ namespace Diarios.Api.Service
         {
             List<SearchDiariosResultModel> diarios = new List<SearchDiariosResultModel>();
 
-            if (search.Terms != null)
+            if (search.Terms != null) search.Terms = search.Terms?.Replace('+', ' ');
+
+            List<int> ids = await _repository.SearchForDiariosIdsAsync(QueryBuilder.GetDocsIds(search), search.Cidade);
+
+            bool hasMore = ids.Count > search.Limit;
+            if (hasMore) ids = ids.Take(search.Limit).ToList();
+
+            var response = await _repository.SearchDiariosByIdListAsync(QueryBuilder.GetPaginasByDocIds(search, ids), search.Cidade);
+
+            return new ResponseModel
             {
-                search.Terms = search.Terms?.Replace('+', ' ');
-
-                List<int> ids = await _repository.SearchForDiariosIdsAsync(QueryBuilder.GetDocsIds(search), search.Cidade);
-
-                bool hasMore = ids.Count > search.Limit;
-                if (hasMore) ids = ids.Take(search.Limit).ToList();
-                var response = await _repository.SearchDiariosByIdListAsync(QueryBuilder.GetPaginasByDocIds(search, ids), search.Cidade);
-                return new ResponseModel
-                {
-                    SearchDiariosResults = response,
-                    HasMore = hasMore
-                };
-            }
-            // adicionar a opcao caso seja busca sem termos, só edicao
-
-            return new();
+                SearchDiariosResults = response,
+                HasMore = hasMore
+            };
         }
 
         public async Task<DiarioModel> SearchForLatestAsync(string cidade)

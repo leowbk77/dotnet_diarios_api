@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Diarios.Api.Models
 {
@@ -17,6 +18,7 @@ namespace Diarios.Api.Models
         public int? LastDocId { get; set; }
         //limite de documentos a serem buscados
         public int Limit { get; set; } = 10;
+        [Required]
         public string Cidade {get; set;} = String.Empty;
     }
 }
