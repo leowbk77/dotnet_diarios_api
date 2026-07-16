@@ -157,6 +157,7 @@ namespace Diarios.Api.Infra.Repository
             Ano = reader.IsDBNull(reader.GetOrdinal("ano")) ? 0 : reader.GetInt32(reader.GetOrdinal("ano")),
             Mes = reader.IsDBNull(reader.GetOrdinal("mes")) ? 0 : reader.GetInt32(reader.GetOrdinal("mes")),
             Dia = reader.IsDBNull(reader.GetOrdinal("dia")) ? 0 : reader.GetInt32(reader.GetOrdinal("dia")),
+            Data = reader.IsDBNull(reader.GetOrdinal("dt_edicao")) ? new() : DateOnly.Parse(reader.GetString(reader.GetOrdinal("dt_edicao"))),
             Paginas = new List<PaginaModel>()
         };
 
@@ -168,6 +169,7 @@ namespace Diarios.Api.Infra.Repository
             Ano = reader.IsDBNull(reader.GetOrdinal("ano")) ? 0 : reader.GetInt32(reader.GetOrdinal("ano")),
             Mes = reader.IsDBNull(reader.GetOrdinal("mes")) ? 0 : reader.GetInt32(reader.GetOrdinal("mes")),
             Dia = reader.IsDBNull(reader.GetOrdinal("dia")) ? 0 : reader.GetInt32(reader.GetOrdinal("dia")),
+            Data = reader.IsDBNull(reader.GetOrdinal("dt_edicao")) ? new() : DateOnly.Parse(reader.GetString(reader.GetOrdinal("dt_edicao")))
         };
 
         private string GetConnectionStringValidada(string cidade)
@@ -179,6 +181,7 @@ namespace Diarios.Api.Infra.Repository
                 Log.Information($"database: {cidade} nao encontrado.");
                 throw new DatabaseNotFoundException(connectionString);
             }
+            Log.Information($"database: {cidade} encontrado. conn: {connectionString}");
 
             return connectionString;
         }
@@ -186,7 +189,7 @@ namespace Diarios.Api.Infra.Repository
         private bool DataBaseExists(string cidade)
         {
             string db = $"{cidade}.db";
-            return (File.Exists($"./{db}") || File.Exists($"/data/{db}"));
+            return (File.Exists($"./{db}") || File.Exists($"./data/{db}"));
         }
 
     }

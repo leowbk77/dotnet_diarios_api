@@ -39,7 +39,7 @@ namespace Diarios.Api.Application.Util.QueryBuilder
             string conteudoDeBusca = searchModel.Terms == null ? "f.pagina = 1" : $"f.conteudo MATCH '{searchModel.Terms}'";
 
             return $"""
-                    SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia
+                    SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia, d.dt_edicao
                     FROM docs_fts f
                     INNER JOIN docs d ON f.doc_id = d.id
                     WHERE f.doc_id IN ({idList})
@@ -61,12 +61,12 @@ namespace Diarios.Api.Application.Util.QueryBuilder
                     case 1:
                         filterQuery = $"""
                                         SELECT * FROM (
-                                                        SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia 
+                                                        SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia, d1.dt_edicao
                                                         FROM docs d1 
                                                         WHERE d1.ano = {dataInicial.Year}
                                                         AND d1.mes > {dataInicial.Month}
                                                         UNION
-                                                        SELECT d2.id, d2.nm_edicao, d2.caminho, d2.ano, d2.mes, d2.dia
+                                                        SELECT d2.id, d2.nm_edicao, d2.caminho, d2.ano, d2.mes, d2.dia, d2.dt_edicao
                                                         FROM docs d2 
                                                         WHERE d2.ano = {dataFinal.Year}
                                                         AND d2.mes < {dataFinal.Month}
@@ -76,11 +76,11 @@ namespace Diarios.Api.Application.Util.QueryBuilder
                     case > 1:
                         filterQuery = $"""
                                         SELECT * FROM (
-                                        SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia FROM docs d1 WHERE d1.ano = {dataInicial.Year} AND d1.mes > {dataInicial.Month}
+                                        SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia, d1.dt_edicao FROM docs d1 WHERE d1.ano = {dataInicial.Year} AND d1.mes > {dataInicial.Month}
                                         UNION
-                                        SELECT d3.id, d3.nm_edicao, d3.caminho, d3.ano, d3.mes, d3.dia FROM docs d3 WHERE d3.ano BETWEEN {dataInicial.Year + 1} AND {dataFinal.Year - 1}
+                                        SELECT d3.id, d3.nm_edicao, d3.caminho, d3.ano, d3.mes, d3.dia, d2.dt_edicao FROM docs d3 WHERE d3.ano BETWEEN {dataInicial.Year + 1} AND {dataFinal.Year - 1}
                                         UNION
-                                        SELECT d2.id, d2.nm_edicao, d2.caminho, d2.ano, d2.mes, d2.dia FROM docs d2 WHERE d2.ano = {dataFinal.Year} AND d2.mes < {dataFinal.Month})
+                                        SELECT d2.id, d2.nm_edicao, d2.caminho, d2.ano, d2.mes, d2.dia, d3.dt_edicao FROM docs d2 WHERE d2.ano = {dataFinal.Year} AND d2.mes < {dataFinal.Month})
                                         """;
                         break;
                 }
@@ -91,7 +91,7 @@ namespace Diarios.Api.Application.Util.QueryBuilder
                 if (queryModel.DtInicial != null)
                 {
                     filterQuery = $"""
-                                    SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia 
+                                    SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia, d1.dt_edicao 
                                     FROM docs d1
                                     WHERE ano = {dataInicial.Year}
                                     AND mes = {dataInicial.Month}
@@ -102,7 +102,7 @@ namespace Diarios.Api.Application.Util.QueryBuilder
                 {
                     //nenhuma data foi especificada
                     filterQuery = $"""
-                                    SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia 
+                                    SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia, d1.dt_edicao 
                                     FROM docs d1
                                     """;
                     filterQuery = $""""docs""""; // temporario para testes

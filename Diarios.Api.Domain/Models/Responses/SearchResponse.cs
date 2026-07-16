@@ -1,4 +1,6 @@
 ﻿
+using Diarios.Api.Domain.Models.Entities;
+
 namespace Diarios.Api.Domain.Models.Responses
 {
     public class SearchResponse
@@ -7,15 +9,8 @@ namespace Diarios.Api.Domain.Models.Responses
         public bool HasMore { get; set; } = false;
     }
 
-    public class SearchDiariosResultModel
+    public class SearchDiariosResultModel : Diario
     {
-        public int Id { get; set; }
-        public string NmEdicao { get; set; } = String.Empty;
-        public string Caminho { get; set; } = String.Empty;
-        public int Ano { get; set; }
-        public int Mes { get; set; }
-        public int Dia { get; set; }
-        public DateOnly Data { get; set; } = new(); // adição futura
         public List<PaginaModel> Paginas { get; set; } = new();
     }
 
