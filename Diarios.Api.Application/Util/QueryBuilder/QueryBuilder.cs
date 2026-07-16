@@ -1,6 +1,6 @@
-﻿using Diarios.Api.Models;
+﻿using Diarios.Api.Domain.Models.Requests;
 
-namespace Diarios.Api.Service
+namespace Diarios.Api.Application.Util.QueryBuilder
 {
     public static class QueryBuilder
     {
@@ -9,7 +9,7 @@ namespace Diarios.Api.Service
         /// </summary>
         /// <param name="searchModel"></param>
         /// <returns></returns>
-        public static string GetDocsIds(SearchQueryModel searchModel)
+        public static string GetDocsIds(SearchRequest searchModel)
         {
             int lastId = searchModel.LastDocId ?? 0;
             int fetchLimit = searchModel.Limit + 1;
@@ -33,7 +33,7 @@ namespace Diarios.Api.Service
             return query;
         }
 
-        public static string GetPaginasByDocIds(SearchQueryModel searchModel, IEnumerable<int> docIds)
+        public static string GetPaginasByDocIds(SearchRequest searchModel, IEnumerable<int> docIds)
         {
             string idList = string.Join(",", docIds);
             string conteudoDeBusca = searchModel.Terms == null ? "f.pagina = 1" : $"f.conteudo MATCH '{searchModel.Terms}'";
@@ -48,7 +48,7 @@ namespace Diarios.Api.Service
                     """;
         }
 
-        private static string AddDateFiltering(SearchQueryModel queryModel)
+        private static string AddDateFiltering(SearchRequest queryModel)
         {
             string filterQuery = String.Empty;
             DateOnly dataInicial = queryModel.DtInicial ?? new DateOnly();
@@ -89,7 +89,7 @@ namespace Diarios.Api.Service
             {
                 //usuario definiu uma data especifica
                 if (queryModel.DtInicial != null)
-                { 
+                {
                     filterQuery = $"""
                                     SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia 
                                     FROM docs d1
@@ -97,7 +97,8 @@ namespace Diarios.Api.Service
                                     AND mes = {dataInicial.Month}
                                     AND dia = {dataInicial.Day}
                                     """;
-                } else
+                }
+                else
                 {
                     //nenhuma data foi especificada
                     filterQuery = $"""

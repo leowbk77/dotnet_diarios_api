@@ -1,7 +1,8 @@
-﻿using Diarios.Api.Util.CustomException;
-using Diarios.Api.Util.Provider.Interface;
+﻿using Diarios.Api.Application.Util.CustomException;
+using Diarios.Api.Application.Util.Provider.Interface;
+using Microsoft.Extensions.Configuration;
 
-namespace Diarios.Api.Util.Provider
+namespace Diarios.Api.Application.Util.Provider
 {
     public class CidadeProvider : ICidadeProvider
     {

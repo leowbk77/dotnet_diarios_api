@@ -1,4 +1,4 @@
-﻿namespace Diarios.Api.Util.Provider.Interface
+﻿namespace Diarios.Api.Application.Util.Provider.Interface
 {
     public interface ICidadeProvider
     {

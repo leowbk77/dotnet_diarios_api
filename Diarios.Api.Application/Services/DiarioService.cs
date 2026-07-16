@@ -1,10 +1,13 @@
-﻿using Diarios.Api.Models;
-using Diarios.Api.Repository;
-using Diarios.Api.Repository.Interface;
-using Diarios.Api.Service.Interface;
-using Diarios.Api.Util.CustomException;
+﻿using Diarios.Api.Application.Util.QueryBuilder;
+using Diarios.Api.Application.Util.CustomException;
+using Diarios.Api.Domain.Contracts.Repository;
+using Diarios.Api.Domain.Contracts.Service;
+using Diarios.Api.Domain.Models.Entities;
+using Diarios.Api.Domain.Models.Requests;
+using Diarios.Api.Domain.Models.Responses;
+using Microsoft.AspNetCore.Http;
 
-namespace Diarios.Api.Service
+namespace Diarios.Api.Application.Services
 {
     public class DiarioService : IDiarioService
     {
@@ -15,12 +18,12 @@ namespace Diarios.Api.Service
             _repository = repository;
         }
 
-        public DiarioModel GetDiarioById(int id, string cidade)
+        public Diario GetDiarioById(int id, string cidade)
         {
             return _repository.GetDiarioById(id, cidade);
         }
 
-        public async Task<ResponseModel> SearchDiariosAsync(SearchQueryModel search)
+        public async Task<SearchResponse> SearchDiariosAsync(SearchRequest search)
         {
             List<SearchDiariosResultModel> diarios = new List<SearchDiariosResultModel>();
 
@@ -33,14 +36,14 @@ namespace Diarios.Api.Service
 
             var response = await _repository.SearchDiariosByIdListAsync(QueryBuilder.GetPaginasByDocIds(search, ids), search.Cidade);
 
-            return new ResponseModel
+            return new SearchResponse
             {
                 SearchDiariosResults = response,
                 HasMore = hasMore
             };
         }
 
-        public async Task<DiarioModel> SearchForLatestAsync(string cidade)
+        public async Task<Diario> SearchForLatestAsync(string cidade)
         {
             var response = await _repository.SearchForLatestAsync(cidade);
             if (response == null)

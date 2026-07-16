@@ -1,4 +1,4 @@
-﻿namespace Diarios.Api.Util.CustomException
+﻿namespace Diarios.Api.Application.Util.CustomException
 {
     public class DiarioCustomException : Exception
     {

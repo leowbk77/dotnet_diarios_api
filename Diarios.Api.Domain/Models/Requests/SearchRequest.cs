@@ -1,10 +1,10 @@
-﻿using System.ComponentModel;
+﻿
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Diarios.Api.Models
+namespace Diarios.Api.Domain.Models.Requests
 {
-    [Description("Modelo de busca")]
-    public class SearchQueryModel
+    public class SearchRequest
     {
         [Description("termos de busca textual")]
         public string? Terms { get; set; }
@@ -19,6 +19,6 @@ namespace Diarios.Api.Models
         //limite de documentos a serem buscados
         public int Limit { get; set; } = 10;
         [Required]
-        public string Cidade {get; set;} = String.Empty;
+        public string Cidade { get; set; } = String.Empty;
     }
 }

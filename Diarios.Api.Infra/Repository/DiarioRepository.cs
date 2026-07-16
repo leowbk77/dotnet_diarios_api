@@ -1,12 +1,13 @@
-﻿using Diarios.Api.Models;
-using Diarios.Api.Repository.Interface;
-using Diarios.Api.Service;
-using Diarios.Api.Util.CustomException;
-using Diarios.Api.Util.Provider.Interface;
+﻿using Diarios.Api.Application.Util.CustomException;
+using Diarios.Api.Application.Util.Provider.Interface;
+using Diarios.Api.Domain.Contracts.Repository;
+using Diarios.Api.Domain.Models.Entities;
+using Diarios.Api.Domain.Models.Responses;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 
-namespace Diarios.Api.Repository
+namespace Diarios.Api.Infra.Repository
 {
     public class DiarioRepository : IDiarioRepository
     {
@@ -19,11 +20,11 @@ namespace Diarios.Api.Repository
             _configuration = configuration;
         }
 
-        public DiarioModel GetDiarioById(int id, string cidade)
+        public Diario GetDiarioById(int id, string cidade)
         {
             string connectionString = GetConnectionStringValidada(cidade);
             SqliteConnection connection = new SqliteConnection(connectionString);
-            DiarioModel diario = new DiarioModel();
+            Diario diario = new Diario();
 
             connection.Open();
             var command = connection.CreateCommand();
@@ -51,7 +52,7 @@ namespace Diarios.Api.Repository
             return diario;
         }
 
-        public async Task<DiarioModel?> SearchForLatestAsync(string cidade)
+        public async Task<Diario?> SearchForLatestAsync(string cidade)
         {
             string connectionString = GetConnectionStringValidada(cidade);
 
@@ -85,7 +86,7 @@ namespace Diarios.Api.Repository
 
             using var reader = await command.ExecuteReaderAsync();
 
-            while(reader.Read())
+            while (reader.Read())
             {
                 diariosIds.Add(reader.GetInt32(reader.GetOrdinal("doc_id")));
             }
@@ -111,7 +112,7 @@ namespace Diarios.Api.Repository
             {
                 int id = reader.GetInt32(reader.GetOrdinal("id"));
 
-                if(idAtual != id)
+                if (idAtual != id)
                 {
                     idAtual = id;
                     paginasObtidasNoIdAtual = 0;
@@ -122,7 +123,7 @@ namespace Diarios.Api.Repository
                     diariosResult[id] = MapSearchResult(reader);
                 }
 
-                if(paginasObtidasNoIdAtual < 3)
+                if (paginasObtidasNoIdAtual < 3)
                 {
                     diariosResult[id].Paginas.Add(MapPagina(reader));
                 }
@@ -159,7 +160,7 @@ namespace Diarios.Api.Repository
             Paginas = new List<PaginaModel>()
         };
 
-        private static DiarioModel MapDiario(SqliteDataReader reader) => new()
+        private static Diario MapDiario(SqliteDataReader reader) => new()
         {
             Id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32(reader.GetOrdinal("id")),
             NmEdicao = reader.IsDBNull(reader.GetOrdinal("nm_edicao")) ? "" : reader.GetString(reader.GetOrdinal("nm_edicao")),
@@ -189,4 +190,5 @@ namespace Diarios.Api.Repository
         }
 
     }
+
 }
