@@ -1,4 +1,5 @@
-﻿using Diarios.Api.Domain.Models.Requests;
+﻿using Diarios.Api.Domain.Models;
+using Diarios.Api.Domain.Models.Requests;
 
 namespace Diarios.Api.Application.Util.QueryBuilder
 {
@@ -9,16 +10,20 @@ namespace Diarios.Api.Application.Util.QueryBuilder
         /// </summary>
         /// <param name="searchModel"></param>
         /// <returns></returns>
-        public static string GetDocsIds(SearchRequest searchModel)
+        public static QueryDefinition GetDocsIds(SearchRequest searchModel)
         {
+            QueryDefinition query = new QueryDefinition();
+
             int lastId = searchModel.LastDocId ?? 0;
             int fetchLimit = searchModel.Limit + 1;
 
-            // possibilidade de SQL Injection !!!!!!!!!
-            string termosDeBusca = searchModel.Terms == null ? "1" : $"f.conteudo MATCH '{searchModel.Terms}'";
-            string edicaoDeBusca = searchModel.Edicao == null ? "1" : $"d.nm_edicao LIKE '%{searchModel.Edicao}%'";
+            string termosDeBusca = searchModel.Terms == null ? "1" : $"f.conteudo MATCH @termos";
+            if (!termosDeBusca.Equals("1")) query.Parameters.Add("@termos", searchModel.Terms ?? String.Empty);
 
-            string query = $"""
+            string edicaoDeBusca = searchModel.Edicao == null ? "1" : $"d.nm_edicao LIKE @nm_edicao";
+            if (!edicaoDeBusca.Equals("1")) query.Parameters.Add("@nm_edicao", $"%{searchModel.Edicao}%");
+
+            query.Sql = $"""
                 SELECT DISTINCT f.doc_id
                 FROM docs_fts f
                 INNER JOIN ({AddDateFiltering(searchModel)}) d 
@@ -33,12 +38,15 @@ namespace Diarios.Api.Application.Util.QueryBuilder
             return query;
         }
 
-        public static string GetPaginasByDocIds(SearchRequest searchModel, IEnumerable<int> docIds)
+        public static QueryDefinition GetPaginasByDocIds(SearchRequest searchModel, IEnumerable<int> docIds)
         {
-            string idList = string.Join(",", docIds);
-            string conteudoDeBusca = searchModel.Terms == null ? "f.pagina = 1" : $"f.conteudo MATCH '{searchModel.Terms}'";
+            QueryDefinition query = new QueryDefinition();
 
-            return $"""
+            string idList = string.Join(",", docIds);
+            string conteudoDeBusca = searchModel.Terms == null ? "f.pagina = 1" : $"f.conteudo MATCH @termos";
+            if (!conteudoDeBusca.Equals("f.pagina = 1")) query.Parameters.Add("@termos", searchModel.Terms ?? String.Empty);
+
+            query.Sql = $"""
                     SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia, d.dt_edicao
                     FROM docs_fts f
                     INNER JOIN docs d ON f.doc_id = d.id
@@ -46,6 +54,7 @@ namespace Diarios.Api.Application.Util.QueryBuilder
                     AND {conteudoDeBusca}
                     ORDER BY d.id ASC, f.pagina ASC
                     """;
+            return query;
         }
 
         private static string AddDateFiltering(SearchRequest queryModel)
@@ -56,34 +65,9 @@ namespace Diarios.Api.Application.Util.QueryBuilder
             // usuario selecionou um range de datas
             if (queryModel.DtInicial != null && queryModel.DtFinal != null)
             {
-                switch (dataFinal.Year - dataInicial.Year)
-                {
-                    case 1:
-                        filterQuery = $"""
-                                        SELECT * FROM (
-                                                        SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia, d1.dt_edicao
-                                                        FROM docs d1 
-                                                        WHERE d1.ano = {dataInicial.Year}
-                                                        AND d1.mes > {dataInicial.Month}
-                                                        UNION
-                                                        SELECT d2.id, d2.nm_edicao, d2.caminho, d2.ano, d2.mes, d2.dia, d2.dt_edicao
-                                                        FROM docs d2 
-                                                        WHERE d2.ano = {dataFinal.Year}
-                                                        AND d2.mes < {dataFinal.Month}
-                                                        )
-                                        """;
-                        break;
-                    case > 1:
-                        filterQuery = $"""
-                                        SELECT * FROM (
-                                        SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia, d1.dt_edicao FROM docs d1 WHERE d1.ano = {dataInicial.Year} AND d1.mes > {dataInicial.Month}
-                                        UNION
-                                        SELECT d3.id, d3.nm_edicao, d3.caminho, d3.ano, d3.mes, d3.dia, d2.dt_edicao FROM docs d3 WHERE d3.ano BETWEEN {dataInicial.Year + 1} AND {dataFinal.Year - 1}
-                                        UNION
-                                        SELECT d2.id, d2.nm_edicao, d2.caminho, d2.ano, d2.mes, d2.dia, d3.dt_edicao FROM docs d2 WHERE d2.ano = {dataFinal.Year} AND d2.mes < {dataFinal.Month})
-                                        """;
-                        break;
-                }
+                filterQuery = $"""
+                    SELECT * FROM docs dd WHERE dd.dt_edicao BETWEEN '{dataInicial.FormatDataForSqlite()}' AND '{dataFinal.FormatDataForSqlite()}'
+                    """;
             }
             else
             {
@@ -91,24 +75,32 @@ namespace Diarios.Api.Application.Util.QueryBuilder
                 if (queryModel.DtInicial != null)
                 {
                     filterQuery = $"""
-                                    SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia, d1.dt_edicao 
-                                    FROM docs d1
-                                    WHERE ano = {dataInicial.Year}
-                                    AND mes = {dataInicial.Month}
-                                    AND dia = {dataInicial.Day}
-                                    """;
+                        SELECT * FROM docs dd WHERE dd.dt_edicao = '{dataInicial.FormatDataForSqlite()}'
+                        """;
                 }
                 else
                 {
                     //nenhuma data foi especificada
-                    filterQuery = $"""
-                                    SELECT d1.id, d1.nm_edicao, d1.caminho, d1.ano, d1.mes, d1.dia, d1.dt_edicao 
-                                    FROM docs d1
-                                    """;
-                    filterQuery = $""""docs""""; // temporario para testes
+                    filterQuery = $"docs";
                 }
             }
             return filterQuery;
+        }
+
+        private static string FormatDataForSqlite(this DateOnly data)
+        {
+            int ano = data.Year;
+            int mes = data.Month;
+            int dia = data.Day;
+            if (mes < 10)
+            {
+                if (dia < 10)
+                {
+                    return $"{ano}-0{mes}-0{dia}";
+                }
+                return $"{ano}-0{mes}-{dia}";
+            }
+            return $"{ano}-{mes}-{dia}";
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using Diarios.Api.Application.Util.CustomException;
 using Diarios.Api.Application.Util.Provider.Interface;
 using Diarios.Api.Domain.Contracts.Repository;
+using Diarios.Api.Domain.Models;
 using Diarios.Api.Domain.Models.Entities;
 using Diarios.Api.Domain.Models.Responses;
 using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.Configuration;
 using Serilog;
 
 namespace Diarios.Api.Infra.Repository
@@ -12,12 +12,10 @@ namespace Diarios.Api.Infra.Repository
     public class DiarioRepository : IDiarioRepository
     {
         private readonly ICidadeProvider _connectionProvider;
-        private readonly IConfiguration _configuration;
 
-        public DiarioRepository(ICidadeProvider connectionProvider, IConfiguration configuration)
+        public DiarioRepository(ICidadeProvider connectionProvider)
         {
             _connectionProvider = connectionProvider;
-            _configuration = configuration;
         }
 
         public Diario GetDiarioById(int id, string cidade)
@@ -74,7 +72,7 @@ namespace Diarios.Api.Infra.Repository
             return MapDiario(reader);
         }
 
-        public async Task<List<int>> SearchForDiariosIdsAsync(string query, string cidade)
+        public async Task<List<int>> SearchForDiariosIdsAsync(QueryDefinition query, string cidade)
         {
             string connectionString = GetConnectionStringValidada(cidade);
             List<int> diariosIds = new List<int>();
@@ -82,7 +80,12 @@ namespace Diarios.Api.Infra.Repository
             SqliteConnection connection = new SqliteConnection(connectionString);
             connection.Open();
             var command = connection.CreateCommand();
-            command.CommandText = query;
+            command.CommandText = query.Sql;
+
+            foreach (var param in query.Parameters)
+            {
+                command.Parameters.AddWithValue(param.Key, param.Value);
+            }
 
             using var reader = await command.ExecuteReaderAsync();
 
@@ -94,14 +97,19 @@ namespace Diarios.Api.Infra.Repository
             return diariosIds;
         }
 
-        public async Task<List<SearchDiariosResultModel>> SearchDiariosByIdListAsync(string query, string cidade)
+        public async Task<List<SearchDiariosResultModel>> SearchDiariosByIdListAsync(QueryDefinition query, string cidade)
         {
             string connectionString = GetConnectionStringValidada(cidade);
 
             SqliteConnection connection = new SqliteConnection(connectionString);
             connection.Open();
             var command = connection.CreateCommand();
-            command.CommandText = query;
+            command.CommandText = query.Sql;
+
+            foreach (var param in query.Parameters)
+            {
+                command.Parameters.AddWithValue(param.Key, param.Value);
+            }
 
             using var reader = await command.ExecuteReaderAsync();
 
