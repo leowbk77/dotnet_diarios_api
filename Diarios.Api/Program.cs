@@ -1,9 +1,11 @@
 using Diarios.Api.Ioc;
 using Serilog;
 using Scalar.AspNetCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Diarios.Api
 {
+    [ExcludeFromCodeCoverage]
     public static class Program
     {
         public static void Main(string[] args)

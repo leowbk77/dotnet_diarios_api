@@ -1,8 +1,10 @@
 ﻿using Diarios.Api.Domain.Models;
 using Diarios.Api.Domain.Models.Requests;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Diarios.Api.Application.Util.QueryBuilder
 {
+    [ExcludeFromCodeCoverage]
     public static class QueryBuilder
     {
         /// <summary>

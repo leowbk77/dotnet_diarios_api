@@ -1,5 +1,8 @@
-﻿namespace Diarios.Api.Application.Util.CustomException
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Diarios.Api.Application.Util.CustomException
 {
+    [ExcludeFromCodeCoverage]
     public class DiarioCustomException : Exception
     {
         public int httpStatusCode = 500;

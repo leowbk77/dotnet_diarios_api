@@ -1,7 +1,9 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 
 namespace Diarios.Api.Application.Util.CustomException
 {
+    [ExcludeFromCodeCoverage]
     public class CidadeInvalidaException : DiarioCustomException
     {
         protected string? cidade;

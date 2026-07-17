@@ -1,9 +1,11 @@
 ﻿using Diarios.Api.Application.Util.CustomException;
 using Diarios.Api.Application.Util.Provider.Interface;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Diarios.Api.Application.Util.Provider
 {
+    [ExcludeFromCodeCoverage]
     public class CidadeProvider : ICidadeProvider
     {
         private readonly IConfiguration _configuration;
