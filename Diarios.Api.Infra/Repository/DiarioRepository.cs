@@ -118,7 +118,7 @@ namespace Diarios.Api.Infra.Repository
             int idAtual = 0;
             while (reader.Read())
             {
-                int id = reader.GetInt32(reader.GetOrdinal("id"));
+                int id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32(reader.GetOrdinal("id"));
 
                 if (idAtual != id)
                 {

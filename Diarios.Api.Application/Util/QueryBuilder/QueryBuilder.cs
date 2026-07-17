@@ -10,23 +10,23 @@ namespace Diarios.Api.Application.Util.QueryBuilder
         /// </summary>
         /// <param name="searchModel"></param>
         /// <returns></returns>
-        public static QueryDefinition GetDocsIds(SearchRequest searchModel)
+        public static QueryDefinition GetDocsIds(SearchRequest request)
         {
             QueryDefinition query = new QueryDefinition();
 
-            int lastId = searchModel.LastDocId ?? 0;
-            int fetchLimit = searchModel.Limit + 1;
+            int lastId = request.LastDocId ?? 0;
+            int fetchLimit = request.Limit + 1;
 
-            string termosDeBusca = searchModel.Terms == null ? "1" : $"f.conteudo MATCH @termos";
-            if (!termosDeBusca.Equals("1")) query.Parameters.Add("@termos", searchModel.Terms ?? String.Empty);
+            string termosDeBusca = request.Terms == null ? "1" : $"f.conteudo MATCH @termos";
+            if (!termosDeBusca.Equals("1")) query.Parameters.Add("@termos", request.Terms ?? String.Empty);
 
-            string edicaoDeBusca = searchModel.Edicao == null ? "1" : $"d.nm_edicao LIKE @nm_edicao";
-            if (!edicaoDeBusca.Equals("1")) query.Parameters.Add("@nm_edicao", $"%{searchModel.Edicao}%");
+            string edicaoDeBusca = request.Edicao == null ? "1" : $"d.nm_edicao LIKE @nm_edicao";
+            if (!edicaoDeBusca.Equals("1")) query.Parameters.Add("@nm_edicao", $"%{request.Edicao}%");
 
             query.Sql = $"""
                 SELECT DISTINCT f.doc_id
                 FROM docs_fts f
-                INNER JOIN ({AddDateFiltering(searchModel)}) d 
+                INNER JOIN ({AddDateFiltering(request)}) d 
                 ON f.doc_id = d.id
                 WHERE {termosDeBusca}
                 AND {edicaoDeBusca}
@@ -38,13 +38,13 @@ namespace Diarios.Api.Application.Util.QueryBuilder
             return query;
         }
 
-        public static QueryDefinition GetPaginasByDocIds(SearchRequest searchModel, IEnumerable<int> docIds)
+        public static QueryDefinition GetPaginasByDocIds(SearchRequest request, IEnumerable<int> docIds)
         {
             QueryDefinition query = new QueryDefinition();
 
             string idList = string.Join(",", docIds);
-            string conteudoDeBusca = searchModel.Terms == null ? "f.pagina = 1" : $"f.conteudo MATCH @termos";
-            if (!conteudoDeBusca.Equals("f.pagina = 1")) query.Parameters.Add("@termos", searchModel.Terms ?? String.Empty);
+            string conteudoDeBusca = request.Terms == null ? "f.pagina = 1" : $"f.conteudo MATCH @termos";
+            if (!conteudoDeBusca.Equals("f.pagina = 1")) query.Parameters.Add("@termos", request.Terms ?? String.Empty);
 
             query.Sql = $"""
                     SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia, d.dt_edicao
@@ -57,13 +57,13 @@ namespace Diarios.Api.Application.Util.QueryBuilder
             return query;
         }
 
-        private static string AddDateFiltering(SearchRequest queryModel)
+        private static string AddDateFiltering(SearchRequest request)
         {
             string filterQuery = String.Empty;
-            DateOnly dataInicial = queryModel.DtInicial ?? new DateOnly();
-            DateOnly dataFinal = queryModel.DtFinal ?? dataInicial;
+            DateOnly dataInicial = request.DtInicial ?? new DateOnly();
+            DateOnly dataFinal = request.DtFinal ?? dataInicial;
             // usuario selecionou um range de datas
-            if (queryModel.DtInicial != null && queryModel.DtFinal != null)
+            if (request.DtInicial != null && request.DtFinal != null)
             {
                 filterQuery = $"""
                     SELECT * FROM docs dd WHERE dd.dt_edicao BETWEEN '{dataInicial.FormatDataForSqlite()}' AND '{dataFinal.FormatDataForSqlite()}'
@@ -72,7 +72,7 @@ namespace Diarios.Api.Application.Util.QueryBuilder
             else
             {
                 //usuario definiu uma data especifica
-                if (queryModel.DtInicial != null)
+                if (request.DtInicial != null)
                 {
                     filterQuery = $"""
                         SELECT * FROM docs dd WHERE dd.dt_edicao = '{dataInicial.FormatDataForSqlite()}'
