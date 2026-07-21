@@ -1,10 +1,12 @@
-using Diarios.Api.IoC;
+using Diarios.Api.Ioc;
 using Serilog;
 using Scalar.AspNetCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Diarios.Api
 {
-    public class Program
+    [ExcludeFromCodeCoverage]
+    public static class Program
     {
         public static void Main(string[] args)
         {
@@ -48,6 +50,37 @@ namespace Diarios.Api
 
             app.Run();
         }
+
+        public static void ConfigureServices(this IServiceCollection services)
+        {
+            Log.Information("Configurando serviços da aplicação");
+            Console.WriteLine("Configurando servicos da aplicacao");
+
+            services.AddControllers();
+            services.AddOpenApi(options =>
+            {
+                options.AddDocumentTransformer((document, context, _) =>
+                {
+                    document.Info = new()
+                    {
+                        Title = "Diarios API",
+                        Version = "0.1",
+                        Description = """
+                        API de busca dos diários oficiais municipais indexados.
+                        """,
+                        Contact = new()
+                        {
+                            Name = "",
+                            Email = "",
+                            Url = new Uri("https://documentoapi.example")
+                        }
+                    };
+                    return Task.CompletedTask;
+                });
+            });
+            services.AddDependencies();
+        }
+
         private static string GetEnvironmentVariable()
         {
             const string envVar = "ASPNETCORE_ENVIRONMENT";

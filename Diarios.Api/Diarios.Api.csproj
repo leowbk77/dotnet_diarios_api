@@ -28,4 +28,11 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Diarios.Api.Application\Diarios.Api.Application.csproj" />
+    <ProjectReference Include="..\Diarios.Api.Domain\Diarios.Api.Domain.csproj" />
+    <ProjectReference Include="..\Diarios.Api.Infra\Diarios.Api.Infra.csproj" />
+    <ProjectReference Include="..\Diarios.Api.Ioc\Diarios.Api.Ioc.csproj" />
+  </ItemGroup>
+
 </Project>
