@@ -49,7 +49,7 @@ namespace Diarios.Api.Application.Util.QueryBuilder
             if (!conteudoDeBusca.Equals("f.pagina = 1")) query.Parameters.Add("@termos", request.Terms ?? String.Empty);
 
             query.Sql = $"""
-                    SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.ano, d.mes, d.dia, d.dt_edicao
+                    SELECT f.pagina, f.conteudo, d.id, d.nm_edicao, d.caminho, d.dt_edicao
                     FROM docs_fts f
                     INNER JOIN docs d ON f.doc_id = d.id
                     WHERE f.doc_id IN ({idList})
