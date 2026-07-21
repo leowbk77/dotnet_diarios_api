@@ -5,7 +5,7 @@ namespace Diarios.Api.Application.Util.CustomException
     [ExcludeFromCodeCoverage]
     public class DiarioCustomException : Exception
     {
-        public int httpStatusCode = 500;
+        public int HttpStatusCode { get; set; } = 500;
 
         public DiarioCustomException()
         { }
@@ -18,17 +18,17 @@ namespace Diarios.Api.Application.Util.CustomException
 
         public DiarioCustomException(int statusCode)
         {
-            this.httpStatusCode = statusCode;
+            this.HttpStatusCode = statusCode;
         }
 
         public DiarioCustomException(int statusCode, string message) : base(message)
         {
-            this.httpStatusCode = statusCode;
+            this.HttpStatusCode = statusCode;
         }
 
         public DiarioCustomException(int statusCode, string message, Exception? innerException) : base(message, innerException)
         {
-            this.httpStatusCode = statusCode;
+            this.HttpStatusCode = statusCode;
         }
     }
 }

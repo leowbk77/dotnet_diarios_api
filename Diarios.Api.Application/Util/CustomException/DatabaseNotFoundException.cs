@@ -10,11 +10,11 @@ namespace Diarios.Api.Application.Util.CustomException
         {
         }
 
-        public DatabaseNotFoundException(string dataBase) : base( ((int)HttpStatusCode.NotFound), $"DataBase: {dataBase} não foi inicializado: não há registros")
+        public DatabaseNotFoundException(string dataBase) : base( ((int)System.Net.HttpStatusCode.NotFound), $"DataBase: {dataBase} não foi inicializado: não há registros")
         { 
         }
 
-        public DatabaseNotFoundException(string? dataBase, Exception? innerException) : base(((int)HttpStatusCode.NotFound), $"DataBase: {dataBase} não foi inicializado: não há registros", innerException)
+        public DatabaseNotFoundException(string? dataBase, Exception? innerException) : base(((int)System.Net.HttpStatusCode.NotFound), $"DataBase: {dataBase} não foi inicializado: não há registros", innerException)
         {
         }
     }

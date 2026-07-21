@@ -12,12 +12,12 @@ namespace Diarios.Api.Application.Util.CustomException
             this.cidade = null;
         }
 
-        public CidadeInvalidaException(string cidade) : base(((int)HttpStatusCode.BadRequest),$"Cidade: {cidade} invalida")
+        public CidadeInvalidaException(string cidade) : base(((int)System.Net.HttpStatusCode.BadRequest),$"Cidade: {cidade} invalida")
         {
             this.cidade = cidade;
         }
 
-        public CidadeInvalidaException(string? cidade, Exception? innerException) : base(((int)HttpStatusCode.BadRequest),$"Cidade: {cidade} invalida", innerException)
+        public CidadeInvalidaException(string? cidade, Exception? innerException) : base(((int)System.Net.HttpStatusCode.BadRequest),$"Cidade: {cidade} invalida", innerException)
         {
             this.cidade = cidade;
         }

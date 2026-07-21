@@ -52,7 +52,7 @@ namespace Diarios.Api.Infra.Repository
             string connectionString = GetConnectionStringValidada(cidade);
 
             using var connection = new SqliteConnection(connectionString);
-            connection.Open();
+            await connection.OpenAsync();
 
             var command = connection.CreateCommand();
             command.CommandText = """
@@ -75,7 +75,7 @@ namespace Diarios.Api.Infra.Repository
             List<int> diariosIds = new List<int>();
 
             SqliteConnection connection = new SqliteConnection(connectionString);
-            connection.Open();
+            await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = query.Sql;
 
@@ -99,7 +99,7 @@ namespace Diarios.Api.Infra.Repository
             string connectionString = GetConnectionStringValidada(cidade);
 
             SqliteConnection connection = new SqliteConnection(connectionString);
-            connection.Open();
+            await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = query.Sql;
 

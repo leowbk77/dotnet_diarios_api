@@ -30,7 +30,7 @@ namespace Diarios.Api.Controllers
             }
             catch (DiarioCustomException ex)
             {
-                return StatusCode(ex.httpStatusCode, ex.Message);
+                return StatusCode(ex.HttpStatusCode, ex.Message);
             }
         }
 
@@ -47,7 +47,7 @@ namespace Diarios.Api.Controllers
             }
             catch (DiarioCustomException ex)
             {
-                return StatusCode(ex.httpStatusCode, ex.Message);
+                return StatusCode(ex.HttpStatusCode, ex.Message);
             }
         }
 
@@ -63,7 +63,7 @@ namespace Diarios.Api.Controllers
             }
             catch (DiarioCustomException ex)
             {
-                return StatusCode(ex.httpStatusCode, ex.Message);
+                return StatusCode(ex.HttpStatusCode, ex.Message);
             }
         }
 

@@ -25,8 +25,6 @@ namespace Diarios.Api.Application.Services
 
         public async Task<SearchResponse> SearchDiariosAsync(SearchRequest search)
         {
-            List<SearchDiariosResultModel> diarios = new List<SearchDiariosResultModel>();
-
             if (search.Terms != null) search.Terms = search.Terms?.Replace('+', ' ');
 
             List<int> ids = await _repository.SearchForDiariosIdsAsync(QueryBuilder.GetDocsIds(search), search.Cidade);
