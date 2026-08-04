@@ -59,6 +59,7 @@ namespace Diarios.Api.Infra.Repository
                           SELECT *
                           FROM docs
                           ORDER BY dt_edicao
+                          DESC
                           LIMIT 1
                           """;
 
@@ -188,7 +189,9 @@ namespace Diarios.Api.Infra.Repository
         private bool DataBaseExists(string cidade)
         {
             string db = $"{cidade}.db";
-            return (File.Exists($"./{db}") || File.Exists($"./data/{db}"));
+            return (File.Exists($"./{db}") 
+                    || File.Exists($"./data/{db}")
+                    || File.Exists($"/data/{db}"));
         }
 
     }
