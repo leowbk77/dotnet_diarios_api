@@ -6,8 +6,9 @@ namespace Diarios.Api.Domain.Contracts.Service
 {
     public interface IDiarioService
     {
-        Diario GetDiarioById(int id, string cidade);
+        Task<Diario> GetDiarioById(int id, string cidade);
         Task<SearchResponse> SearchDiariosAsync(SearchRequest search);
         Task<Diario> SearchForLatestAsync(string cidade);
+        Task<IndexStatusResponse> GetIndexStatusAsync(string cidade);
     }
 }

@@ -18,13 +18,13 @@ namespace Diarios.Api.Infra.Repository
             _connectionProvider = connectionProvider;
         }
 
-        public Diario GetDiarioById(int id, string cidade)
+        public async Task<Diario> GetDiarioById(int id, string cidade)
         {
             string connectionString = GetConnectionStringValidada(cidade);
             SqliteConnection connection = new SqliteConnection(connectionString);
             Diario diario = new Diario();
 
-            connection.Open();
+            await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText =
                                 """
@@ -34,7 +34,7 @@ namespace Diarios.Api.Infra.Repository
                                 """;
 
             command.Parameters.AddWithValue("$id", id);
-            var reader = command.ExecuteReader();
+            using var reader = await command.ExecuteReaderAsync();
 
             while (reader.Read())
             {
@@ -143,6 +143,35 @@ namespace Diarios.Api.Infra.Repository
             return diariosResult.Values.ToList();
         }
 
+        public async Task<IndexStatusResponse> SearchForIndexStatusAsync(string from)
+        {
+            string connectionString = GetConnectionStringValidada(from);
+            IndexStatusResponse response = new();
+
+            using SqliteConnection connection = new SqliteConnection(connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT
+                    COUNT(*) AS TotalIndexados,
+                    MAX(dt_edicao) AS DataMaisRecente,
+                    MIN(dt_edicao) AS DataMaisAntiga
+                FROM docs
+                """;
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            if( await reader.ReadAsync())
+            {
+                response.DiariosIndexados = reader.IsDBNull(reader.GetOrdinal("TotalIndexados")) ? 0 : reader.GetInt32(reader.GetOrdinal("TotalIndexados"));
+                response.DataMaisRecenteIndexada = reader.IsDBNull(reader.GetOrdinal("DataMaisRecente")) ? "" : reader.GetString(reader.GetOrdinal("DataMaisRecente"));
+                response.DataMaisAntigaIndexada = reader.IsDBNull(reader.GetOrdinal("DataMaisAntiga")) ? "" : reader.GetString(reader.GetOrdinal("DataMaisAntiga"));
+            }
+
+            return response;
+        }
+
+        #region "Metodos auxiliares"
         private static PaginaModel MapPaginaSemConteudo(SqliteDataReader reader) => new()
         {
             Numero = reader.IsDBNull(reader.GetOrdinal("pagina")) ? 0 : reader.GetInt32(reader.GetOrdinal("pagina")),
@@ -193,7 +222,7 @@ namespace Diarios.Api.Infra.Repository
                     || File.Exists($"./data/{db}")
                     || File.Exists($"/data/{db}"));
         }
-
+        #endregion
     }
 
 }

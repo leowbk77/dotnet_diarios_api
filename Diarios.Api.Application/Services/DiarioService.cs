@@ -18,9 +18,9 @@ namespace Diarios.Api.Application.Services
             _repository = repository;
         }
 
-        public Diario GetDiarioById(int id, string cidade)
+        public async Task<Diario> GetDiarioById(int id, string cidade)
         {
-            return _repository.GetDiarioById(id, cidade);
+            return await _repository.GetDiarioById(id, cidade);
         }
 
         public async Task<SearchResponse> SearchDiariosAsync(SearchRequest search)
@@ -54,6 +54,17 @@ namespace Diarios.Api.Application.Services
             }
             return response;
         }
+        
+        public async Task<IndexStatusResponse> GetIndexStatusAsync(string from)
+        {
+            var response = await _repository.SearchForIndexStatusAsync(from);
 
+            if (response == null)
+            {
+                throw new DiarioCustomException(StatusCodes.Status404NotFound);
+            }
+
+            return response;
+        }
     }
 }

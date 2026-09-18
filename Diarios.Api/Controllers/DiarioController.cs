@@ -22,11 +22,11 @@ namespace Diarios.Api.Controllers
         [HttpGet("{cidade}/{id}")]
         [EndpointDescription("Endpoint que busca diario a partir do id")]
         [ProducesResponseType(typeof(Diario), StatusCodes.Status200OK)]
-        public IActionResult GetDiarioById(int id, string cidade)
+        public async Task<IActionResult> GetDiarioById(int id, string cidade)
         {
             try
             {
-                return Ok(_service.GetDiarioById(id, cidade));
+                return Ok(await _service.GetDiarioById(id, cidade));
             }
             catch (DiarioCustomException ex)
             {
@@ -37,8 +37,7 @@ namespace Diarios.Api.Controllers
         [HttpGet("search")]
         [EndpointDescription("Endpoint responsável por realizar as buscas pelos diários na base de dados a partir dos parâmetros recebidos pela query.")]
         [ProducesResponseType(typeof(SearchResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Search([FromQuery][Description("Parametros de busca e filtragem dos diários")] 
-                                    SearchRequest query)
+        public async Task<IActionResult> Search([FromQuery] SearchRequest query)
         {
             Log.Information($"GET Search: {query.Cidade}: lastId:{query.LastDocId ?? 0}");
             try
@@ -60,6 +59,22 @@ namespace Diarios.Api.Controllers
             try
             {
                 return Ok(await _service.SearchForLatestAsync(from));
+            }
+            catch (DiarioCustomException ex)
+            {
+                return StatusCode(ex.HttpStatusCode, ex.Message);
+            }
+        }
+        
+        [HttpGet("get-index-status")]
+        [EndpointDescription("Endpoint responsável por retornar o status de indexação do database informado")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetIndexStatus([FromQuery] string from)
+        {
+            Log.Information($"GET GetIndexStatus: from: {from}");
+            try
+            {
+                return Ok(await _service.GetIndexStatusAsync(from));
             }
             catch (DiarioCustomException ex)
             {
