@@ -18,6 +18,7 @@ namespace Diarios.Api.Application.Util.Provider
         public string GetConnectionString(string cidade)
         {
             var conn = _configuration.GetConnectionString(cidade);
+            Console.WriteLine($"ConnectionString obtida: {conn}");
             if (String.IsNullOrEmpty(conn))
                 throw new CidadeInvalidaException(cidade);
             return conn;

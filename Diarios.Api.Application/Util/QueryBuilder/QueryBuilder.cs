@@ -25,6 +25,11 @@ namespace Diarios.Api.Application.Util.QueryBuilder
             string edicaoDeBusca = request.Edicao == null ? "1" : $"d.nm_edicao LIKE @nm_edicao";
             if (!edicaoDeBusca.Equals("1")) query.Parameters.Add("@nm_edicao", $"%{request.Edicao}%");
 
+            string paginacao = $"(d.dt_edicao <{(lastId == 0 ? '=' : string.Empty)} @dt_edicao OR (d.dt_edicao = @dt_edicao AND d.id < @last_id))";
+            string dtEdicaoForPaginacao = FormatDataForSqlite(request.LastDocDtEdicao);
+            query.Parameters.Add("@dt_edicao", $"{dtEdicaoForPaginacao}");
+            query.Parameters.Add("@last_id", $"{lastId}");
+
             query.Sql = $"""
                 SELECT DISTINCT f.doc_id
                 FROM docs_fts f
@@ -32,8 +37,8 @@ namespace Diarios.Api.Application.Util.QueryBuilder
                 ON f.doc_id = d.id
                 WHERE {termosDeBusca}
                 AND {edicaoDeBusca}
-                AND f.doc_id > {lastId}
-                ORDER BY f.doc_id ASC
+                AND {paginacao}
+                ORDER BY d.dt_edicao DESC, d.id DESC
                 LIMIT {fetchLimit}
                 """;
 

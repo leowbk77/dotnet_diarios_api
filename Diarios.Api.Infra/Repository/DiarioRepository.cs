@@ -205,7 +205,7 @@ namespace Diarios.Api.Infra.Repository
         {
             string connectionString = _connectionProvider.GetConnectionString(cidade);
 
-            if (!DataBaseExists(cidade))
+            if (!DataBaseExists(connectionString))
             {
                 Log.Information($"database: {cidade} nao encontrado.");
                 throw new DatabaseNotFoundException(connectionString);
@@ -215,12 +215,10 @@ namespace Diarios.Api.Infra.Repository
             return connectionString;
         }
 
-        private bool DataBaseExists(string cidade)
+        private static bool DataBaseExists(string conn)
         {
-            string db = $"{cidade}.db";
-            return (File.Exists($"./{db}") 
-                    || File.Exists($"./data/{db}")
-                    || File.Exists($"/data/{db}"));
+            string dbPath = conn.Split('=')[1];
+            return File.Exists(dbPath);
         }
         #endregion
     }
