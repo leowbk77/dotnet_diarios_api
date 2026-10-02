@@ -12,22 +12,22 @@ namespace Diarios.Api.Tests.Controllers
     public class DiarioControllerTests
     {
         [Fact]
-        public void GetDiarioById_ReturnsOkWithDiario()
+        public async Task GetDiarioById_ReturnsOkWithDiario()
         {
             var mockService = new Mock<IDiarioService>();
             var esperado = new Diario { Id = 1, NmEdicao = "E1" };
-            mockService.Setup(s => s.GetDiarioById(1, "SP")).Returns(esperado);
+            mockService.Setup(s => s.GetDiarioById(1, "SP")).ReturnsAsync(esperado);
 
             var controller = new DiarioController(mockService.Object);
 
-            var result = controller.GetDiarioById(1, "SP");
+            var result = await controller.GetDiarioById(1, "SP");
 
             var ok = Assert.IsType<OkObjectResult>(result);
             Assert.Equal(esperado, ok.Value);
         }
 
         [Fact]
-        public void GetDiarioById_WhenServiceThrowsDiarioCustomException_ReturnsStatusCode()
+        public async Task GetDiarioById_WhenServiceThrowsDiarioCustomException_ReturnsStatusCode()
         {
             var mockService = new Mock<IDiarioService>();
             mockService.Setup(s => s.GetDiarioById(1, "SP"))
@@ -35,7 +35,7 @@ namespace Diarios.Api.Tests.Controllers
 
             var controller = new DiarioController(mockService.Object);
 
-            var result = controller.GetDiarioById(1, "SP");
+            var result = await controller.GetDiarioById(1, "SP");
 
             var obj = Assert.IsType<ObjectResult>(result);
             Assert.Equal(404, obj.StatusCode);

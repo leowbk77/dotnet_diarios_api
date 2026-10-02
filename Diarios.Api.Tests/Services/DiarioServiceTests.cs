@@ -16,15 +16,15 @@ namespace Diarios.Api.Tests.Services
     public class DiarioServiceTests
     {
         [Fact]
-        public void GetDiarioById_DelegatesToRepository()
+        public async Task GetDiarioById_DelegatesToRepository()
         {
             var mockRepo = new Mock<IDiarioRepository>();
             var esperado = new Diario { Id = 5, NmEdicao = "E5" };
-            mockRepo.Setup(r => r.GetDiarioById(5, "SP")).Returns(esperado);
+            mockRepo.Setup(r => r.GetDiarioById(5, "SP")).ReturnsAsync(esperado);
 
             var service = new DiarioService(mockRepo.Object);
 
-            var result = service.GetDiarioById(5, "SP");
+            var result = await service.GetDiarioById(5, "SP");
 
             Assert.Equal(esperado, result);
         }
